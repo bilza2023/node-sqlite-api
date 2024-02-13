@@ -5,15 +5,26 @@ const db = new sqlite3.Database('./db.sqlite', (err) => {
         console.error('Error opening database:', err.message);
     } else {
         console.log('Connected to the SQLite database.');
-        // Insert initial data
+        // Create tables
         db.serialize(() => {
-            db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT)");
+            // Create purchases table
+            db.run(`CREATE TABLE IF NOT EXISTS purchases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tcode TEXT NOT NULL,
+                startDate DATE NOT NULL,
+                endDate DATE NOT NULL
+            )`);
 
-            // Insert some initial data
-            db.run("INSERT INTO users (name, email) VALUES (?, ?)", ['John Doe', 'john@example.com']);
-            db.run("INSERT INTO users (name, email) VALUES (?, ?)", ['Jane Smith', 'jane@example.com']);
-
-            console.log('Initial data inserted into the database.');
+            // Create students table
+            db.run(`CREATE TABLE IF NOT EXISTS students (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE,
+                verified INTEGER NOT NULL DEFAULT 0,
+                createdAt DATE NOT NULL DEFAULT (DATETIME('now')),
+                verificationId TEXT,
+                password TEXT DEFAULT "",
+                description TEXT
+            )`);
         });
     }
 });
