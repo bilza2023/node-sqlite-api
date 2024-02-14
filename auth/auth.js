@@ -247,6 +247,28 @@ auth.get("/verify", async function (req, res) {
     }
 });
 ////////////////////////////////////////////////////////
+auth.post("/delete_user", async (req, res) => {
+    try {
+    debugger;
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        // Delete the user record from the database
+        db.run("DELETE FROM students WHERE email = ?", [email], function(err) {
+            if (err) {
+                console.error('Error deleting user:', err.message);
+                return res.status(500).json({ message: "Failed to delete user", error: err });
+            }
+            return res.status(200).json({ message: "User deleted successfully" });
+        });
+    } catch (error) {
+        console.error('Failed to delete user:', error);
+        return res.status(500).json({ message: "Failed to delete user", error: error });
+    }
+});
+
 ////////////////////////////////////////////////////////
 module.exports = auth;
 ////////////////////////////////////////////////////////
