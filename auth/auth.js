@@ -8,7 +8,7 @@ const auth = express.Router();
 const db = require('../db.js'); // Require the database connection
 
 // const Student = require("./student.js");
-// const sendGmail = require("./gmail.js");
+const sendGmail = require("./gmail.js");
 // const send_Forget_Password_Gmail = require("./forget_password_gmail.js");
 const { v4: uuid } = require('uuid');
 ////////////////////////////////////////////////////////
@@ -16,11 +16,10 @@ const { v4: uuid } = require('uuid');
 auth.post('/signup', async (req, res) => {
     try {
         const { email, password } = req.body;
-
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
-
+debugger;
         // Check if user with the same email already exists
         db.get("SELECT * FROM students WHERE email = ?", [email], async (err, row) => {
             if (err) {
@@ -47,7 +46,7 @@ auth.post('/signup', async (req, res) => {
 
             //--even if the email fails the users gets response
             // Send email verification asynchronously
-            // sendGmail(email, verificationId);
+            sendGmail(email, verificationId);
               
                 return res.status(200).json({ message: "Your account has been created" });
             });
@@ -173,6 +172,7 @@ auth.post("/change_password", async function (req, res) {
         return res.status(500).json({ message: "Password could not be changed, please try later", error });
     }
 });
+
 auth.post("/ispaid", async function (req, res) {
     try {
         const email = req.body.email;
