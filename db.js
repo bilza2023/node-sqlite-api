@@ -1,32 +1,76 @@
-const sqlite3 = require('sqlite3').verbose();
+const { Sequelize, DataTypes } = require('sequelize');
 
-const db = new sqlite3.Database('./db.sqlite', (err) => {
-    if (err) {
-        console.error('Error opening database:', err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
-        // Create tables
-        db.serialize(() => {
-            // Create purchases table
-            db.run(`CREATE TABLE IF NOT EXISTS purchases (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                tcode TEXT NOT NULL,
-                startDate DATE NOT NULL,
-                endDate DATE NOT NULL
-            )`);
-
-            // Create students table
-            db.run(`CREATE TABLE IF NOT EXISTS students (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT UNIQUE,
-                verified INTEGER NOT NULL DEFAULT 0,
-                createdAt DATE NOT NULL DEFAULT (DATETIME('now')),
-                verificationId TEXT,
-                password TEXT DEFAULT "",
-                description TEXT
-            )`);
-        });
-    }
+// Initialize Sequelize
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: './db.sqlite', // Path where SQLite database file will be stored
+  logging: false // Disable logging SQL queries (optional)
 });
 
-module.exports = db;
+// Define models
+const Purchase = sequelize.define('Purchase', {
+  tcode: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  startDate: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  endDate: {
+    type: DataTypes.DATE,
+    allowNull: false
+  }
+});
+
+const Student = sequelize.define('Student', {
+  email: {
+    type: DataTypes.TEXT,
+    unique: true
+  },
+  verified: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+  },
+  verificationId: {
+    type: DataTypes.TEXT
+  },
+  password: {
+    type: DataTypes.TEXT,
+    defaultValue: ""
+  },
+  description: {
+    type: DataTypes.TEXT
+  }
+});
+
+// Sync models with database
+async function syncDatabase() {
+  try {
+    await sequelize.sync({ force: false }); // This will drop existing tables and recreate them
+    console.log('Database synchronized successfully');
+  } catch (error) {
+    console.error('Error syncing database:', error);
+  }
+}
+
+syncDatabase();
+
+
+// Export Sequelize instance and models
+module.exports = {
+  sequelize,
+  Purchase,
+  Student
+};
